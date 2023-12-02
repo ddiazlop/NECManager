@@ -19,6 +19,7 @@ defmodule NecmanagerWeb.Router do
 
     get "/", PageController, :home
     get "/hello", HelloController, :index
+    get "/nectable", NectableController, :index
   end
 
   # Other scopes may use custom stacks.
