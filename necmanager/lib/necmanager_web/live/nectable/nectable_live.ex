@@ -4,9 +4,13 @@ defmodule NecmanagerWeb.NectableLive do
   def mount(_params, _session, socket) do
     players = ["Tagons", "Hug", "Jytami", "Seles"]
 
+    characters =
+      Path.wildcard("priv/static/images/characters/*.svg")
+      |> Enum.map(fn path -> String.replace(path, "priv/static/", "") end)
+
     {:ok,
      assign(socket,
-       characters: Path.wildcard("priv/static/images/characters/*.svg"),
+       characters: characters,
        players: players
      )}
   end

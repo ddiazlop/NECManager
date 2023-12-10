@@ -6,7 +6,7 @@ defmodule NectableLiveComponent do
 
   def render(assigns) do
     ~H"""
-    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
+    <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 overflow-visible">
       <th
         scope="row"
         class="flex items-center px-6 py-4 text-gray-900 whitespace-nowrap dark:text-white"
@@ -17,10 +17,14 @@ defmodule NectableLiveComponent do
       </th>
 
       <td class="px-6 py-4">
-        <button
-          id={"dropdownCharactersButton" <> @username}
-          class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
-          type="button"
+        <img src="images/question-mark.svg" class="w-6 h-6 me-2" id={"selectedCharacter" <> @username} />
+        <input
+          type="text"
+          class="w-full px-4 py-2 mt-2 text-base text-gray-700 placeholder-gray-400 border rounded-lg focus:shadow-outline"
+          placeholder="Search character"
+          phx-debounce="200"
+          phx-keyup="character_search"
+          phx-target={@myself}
           phx-click={
             JS.toggle(
               to: "#dropdownCharacters" <> @username,
@@ -28,25 +32,13 @@ defmodule NectableLiveComponent do
               out: {"ease-in duration-200", "opacity-100", "opacity-0"}
             )
           }
-          phx-click-away={JS.hide(to: "#dropdownCharacters" <> @username, transition: {"ease-in duration-200", "opacity-100", "opacity-0"})}
-        >
-          Select Character
-          <svg
-            class="w-2.5 h-2.5 ms-3"
-            aria-hidden="true"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 10 6"
-          >
-            <path
-              stroke="currentColor"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              stroke-width="2"
-              d="m1 1 4 4 4-4"
-            />
-          </svg>
-        </button>
+          phx-click-away={
+            JS.hide(
+              to: "#dropdownCharacters" <> @username,
+              transition: {"ease-in duration-200", "opacity-100", "opacity-0"}
+            )
+          }
+        />
 
         <div
           id={"dropdownCharacters" <> @username}
@@ -55,6 +47,7 @@ defmodule NectableLiveComponent do
           aria-orientation="vertical"
           aria-labelledby={"dropdownCharactersButton" <> @username}
           tabindex="-1"
+          z-index="10000"
         >
           <div class="py-1" role="none">
             <%= for character <- @characters do %>
@@ -63,9 +56,19 @@ defmodule NectableLiveComponent do
                 class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
                 role="menuitem"
                 tabindex="-1"
-                id="dropdownCharactersItem1"
+                id={"dropdownCharacters" <> @username <> character}
+                phx-click={
+                  JS.set_attribute({"src", character}, to: "#selectedCharacter" <> @username)
+                }
               >
-                <%= character %>
+                <img src={character} class="w-6 h-6 me-2" />
+                <%= character
+                |> Path.split()
+                |> List.last()
+                |> String.split("_")
+                |> Enum.map(&String.capitalize/1)
+                |> Enum.join(" ")
+                |> String.replace(".svg", " ") %>
               </a>
             <% end %>
           </div>
@@ -93,5 +96,17 @@ defmodule NectableLiveComponent do
       </td>
     </tr>
     """
+  end
+
+  import NecmanagerWeb.CharacterUtils
+
+  def handle_event("character_search", %{"key" => "Backspace", "value" => current_text}, socket) do
+    characters = search_character(get_characters([]), current_text)
+    {:noreply, assign(socket, characters: characters)}
+  end
+
+  def handle_event("character_search", %{"value" => current_text}, socket) do
+    characters = search_character(socket.assigns.characters, current_text)
+    {:noreply, assign(socket, characters: characters)}
   end
 end
