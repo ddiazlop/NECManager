@@ -5,7 +5,7 @@ defmodule NecmanagerWeb.NectableHTML do
 
   def participant(assigns) do
     ~H"""
-    <NecmanagerWeb.NecTable.participant username={@username} characters= {@characters}/>
+    <NecmanagerWeb.NecTable.participant username={@username} characters={@characters} />
     """
   end
 end

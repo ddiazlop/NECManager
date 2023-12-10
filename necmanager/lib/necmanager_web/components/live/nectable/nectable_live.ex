@@ -1,10 +1,10 @@
-defmodule NecmanagerWeb.NecTable do
-  use Phoenix.Component
+defmodule NectableLiveComponent do
+  use NecmanagerWeb, :live_component
 
   attr :username, :string, default: "Tagons"
   attr :characters, :list, default: []
 
-  def participant(assigns) do
+  def render(assigns) do
     ~H"""
     <tr class="bg-white border-b dark:bg-gray-800 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
       <th
@@ -17,12 +17,18 @@ defmodule NecmanagerWeb.NecTable do
       </th>
 
       <td class="px-6 py-4">
-        <% toggle = false %>
         <button
-          id="dropdownCharactersButton"
+          id={"dropdownCharactersButton" <> @username}
           class="text-white bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-5 py-2.5 text-center inline-flex items-center dark:bg-blue-600 dark:hover:bg-blue-700 dark:focus:ring-blue-800"
           type="button"
-          action={toggle = !toggle}
+          phx-click={
+            JS.toggle(
+              to: "#dropdownCharacters" <> @username,
+              in: {"ease-out duration-300", "opacity-0", "opacity-100"},
+              out: {"ease-in duration-200", "opacity-100", "opacity-0"}
+            )
+          }
+          phx-click-away={JS.hide(to: "#dropdownCharacters" <> @username, transition: {"ease-in duration-200", "opacity-100", "opacity-0"})}
         >
           Select Character
           <svg
@@ -41,7 +47,29 @@ defmodule NecmanagerWeb.NecTable do
             />
           </svg>
         </button>
-        <p><%= toggle %></p>
+
+        <div
+          id={"dropdownCharacters" <> @username}
+          class="absolute mt-2 w-56 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 hidden"
+          role="menu"
+          aria-orientation="vertical"
+          aria-labelledby={"dropdownCharactersButton" <> @username}
+          tabindex="-1"
+        >
+          <div class="py-1" role="none">
+            <%= for character <- @characters do %>
+              <a
+                href="#"
+                class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 hover:text-gray-900 dark:text-gray-200 dark:hover:bg-gray-700 dark:hover:text-white"
+                role="menuitem"
+                tabindex="-1"
+                id="dropdownCharactersItem1"
+              >
+                <%= character %>
+              </a>
+            <% end %>
+          </div>
+        </div>
       </td>
 
       <td class="px-6 py-4">
