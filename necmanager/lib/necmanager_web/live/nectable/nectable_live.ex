@@ -25,8 +25,7 @@ defmodule NecmanagerWeb.NectableLive do
 
   def handle_info(%{topic: @topic, payload: payload}, socket) do
     IO.puts("Received payload: #{inspect(payload)}")
-    # TODO: This JS call is not changing the image, but the payload is being received maybe send the self() in the payload and call the JS from the component?
-    JS.set_attribute({"src", payload.character}, to: "#selectedCharacter" <> payload.username)
-    {:noreply, assign(socket, selected_character: payload.character)}
+    send_update PlayerRowLiveComponent, id: "row-#{payload.username}", selected_character: payload.character
+    {:noreply, socket}
   end
 end
