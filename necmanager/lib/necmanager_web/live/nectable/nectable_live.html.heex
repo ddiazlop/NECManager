@@ -24,7 +24,7 @@
       <tbody>
         <%= for username <- @players do %>
           <.live_component
-            module={NectableLiveComponent}
+            module={PlayerRowLiveComponent}
             id={"row-#{username}"}
             username={username}
             characters={@characters}

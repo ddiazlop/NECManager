@@ -1,8 +1,13 @@
-defmodule NectableLiveComponent do
+defmodule PlayerRowLiveComponent do
   use NecmanagerWeb, :live_component
+
+  import NecmanagerWeb.CharacterUtils
+
+  @topic "selected_character"
 
   attr :username, :string, default: "Tagons"
   attr :characters, :list, default: []
+  attr :selected_character, :string, default: "images/question-mark.svg"
 
   def render(assigns) do
     ~H"""
@@ -17,10 +22,10 @@ defmodule NectableLiveComponent do
       </th>
 
       <td class="px-6 py-4">
-        <img src="images/question-mark.svg" class="w-6 h-6 me-2" id={"selectedCharacter" <> @username} />
+        <img src={@selected_character} class="w-10 h-10 me-2" id={"selectedCharacter" <> @username} />
         <input
           type="text"
-          class="w-full px-4 py-2 mt-2 text-base text-gray-700 placeholder-gray-400 border rounded-lg focus:shadow-outline"
+          class="w-40 px-4 py-2 mt-2 text-base text-gray-700 placeholder-gray-400 border rounded-lg focus:shadow-outline"
           placeholder="Search character"
           phx-debounce="200"
           phx-keyup="character_search"
@@ -57,9 +62,9 @@ defmodule NectableLiveComponent do
                 role="menuitem"
                 tabindex="-1"
                 id={"dropdownCharacters" <> @username <> character}
-                phx-click={
-                  JS.set_attribute({"src", character}, to: "#selectedCharacter" <> @username)
-                }
+                phx-click="character_selected"
+                phx-target={@myself}
+                phx-value-character={character}
               >
                 <img src={character} class="w-6 h-6 me-2" />
                 <%= character
@@ -98,15 +103,20 @@ defmodule NectableLiveComponent do
     """
   end
 
-  import NecmanagerWeb.CharacterUtils
-
   def handle_event("character_search", %{"key" => "Backspace", "value" => current_text}, socket) do
     characters = search_character(get_characters([]), current_text)
     {:noreply, assign(socket, characters: characters)}
   end
 
+  # TODO: Make this event only match when the key is a letter with elixir pattern matching
   def handle_event("character_search", %{"value" => current_text}, socket) do
     characters = search_character(socket.assigns.characters, current_text)
     {:noreply, assign(socket, characters: characters)}
+  end
+
+  def handle_event("character_selected", %{"character" => character}, socket) do
+    IO.puts("Character selected: #{character}")
+    NecmanagerWeb.Endpoint.broadcast_from(self(), @topic, "selected_character", %{character: character, username: socket.assigns.username})
+    {:noreply, assign(socket, selected_character: character)}
   end
 end
