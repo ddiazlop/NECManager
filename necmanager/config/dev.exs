@@ -1,5 +1,15 @@
 import Config
 
+# Configure your database
+config :necmanager, Necmanager.Repo,
+  username: "default",
+  password: "WrRL1sBF6yzV",
+  hostname: "ep-twilight-bar-63308189-pooler.eu-central-1.postgres.vercel-storage.com",
+  database: "verceldb",
+  stacktrace: true,
+  show_sensitive_data_on_connection_error: true,
+  pool_size: 10
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

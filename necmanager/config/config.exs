@@ -8,6 +8,7 @@
 import Config
 
 config :necmanager,
+  ecto_repos: [Necmanager.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint

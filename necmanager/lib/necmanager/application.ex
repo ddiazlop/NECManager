@@ -9,6 +9,7 @@ defmodule Necmanager.Application do
   def start(_type, _args) do
     children = [
       NecmanagerWeb.Telemetry,
+      Necmanager.Repo,
       {DNSCluster, query: Application.get_env(:necmanager, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Necmanager.PubSub},
       # Start the Finch HTTP client for sending emails
